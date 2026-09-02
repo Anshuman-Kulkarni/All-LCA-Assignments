@@ -1,1 +1,16 @@
 
+student_list = ["Anshuman", "Rahul", "Priya", "Sneha"]
+student_tuple = ("Anshuman", "Rahul", "Priya", "Sneha")
+students = {1: "Anshuman", 2: "Rahul", 3: "Priya", 4: "Sneha"}
+print("Student List:", student_list)
+print("Student Tuple:", student_tuple)
+print("Student Dictionary:", students)
+students[5] = "Amit"
+print("\nAfter Adding a student:")
+print(students)
+students[2] = "Rohan"
+print("\nAfter Updating a student:")
+print(students)
+del students[4]
+print("\nAfter Deleting a student:")
+print(students)

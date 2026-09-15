@@ -1,1 +1,33 @@
+student = {
+    "name": "Anshuman",
+    "age": 18,
+    "branch": "Computer"
+}
 
+print("Original Dictionary:", student)
+
+student["city"] = "Pune"
+print("After Adding:", student)
+
+student["age"] = 19
+print("After Updating:", student)
+
+print("Name:", student["name"])
+
+student.pop("city")
+print("After Removing:", student)
+
+numbers = (10, 20, 30, 40, 50)
+
+print("\nOriginal Tuple:", numbers)
+
+print("First element:", numbers[0])
+
+print("First three elements:", numbers[0:3])
+
+print("Count of 20:", numbers.count(20))
+
+print("Index of 30:", numbers.index(30))
+
+# Length
+print("Length of tuple:", len(numbers))

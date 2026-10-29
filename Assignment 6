@@ -1,96 +1,64 @@
-!pip install pandas numpy scikit-learn openpyxl xlrd   
-
-import os
-import numpy as np
+# Step 1: Start
+# Step 2: Import the Pandas library
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder, MinMaxScaler, StandardScaler
 
-# ---------- CHANGE THESE ----------
-file_path    = "mydata.csv"   # your .csv / .xls / .xlsx file
-num_strategy = "mean"         # "mean" or "median"
-enc_method   = "label"        # "label" or "onehot"
-scale_method = "standard"     # "standard", "minmax" or "none"
-# ----------------------------------
+# Step 3: Read the .csv or .xls file and create a DataFrame
+file_path = "mydata.csv"          # change to your file name (.csv / .xls / .xlsx)
 
-# 1. LOAD
-ext = os.path.splitext(file_path)[1].lower()
-if ext == ".csv":
+if file_path.endswith(".csv"):
     df = pd.read_csv(file_path)
-elif ext in (".xls", ".xlsx"):
+else:
     df = pd.read_excel(file_path)
-else:
-    raise ValueError("Unsupported file type. Use .csv, .xls or .xlsx")
 
-# 2. INSPECT (before)
-print("=" * 60, "\nBEFORE PREPROCESSING\n" + "=" * 60)
-print("Shape:", df.shape)
-print("\nFirst 5 rows:\n", df.head())
-print("\nData types:\n", df.dtypes)
-print("\nMissing values:\n", df.isnull().sum())
-print("\nDuplicate rows:", df.duplicated().sum())
+# Step 4: Display the first few records using head()
+print("First 5 records:")
+print(df.head())
 
-print("\n" + "=" * 60, "\nPREPROCESSING STEPS\n" + "=" * 60)
+# Step 5: Display structure and information using info()
+print("\nDataFrame Info:")
+df.info()
 
-# 3. REMOVE DUPLICATES
-before = len(df)
-df = df.drop_duplicates().reset_index(drop=True)
-print(f"[Duplicates] Removed {before - len(df)} duplicate row(s).")
+# Step 6: Display statistical summary using describe()
+print("\nStatistical Summary:")
+print(df.describe())
 
-# 4. MISSING VALUES
-mostly_empty = [c for c in df.columns if df[c].isnull().sum() > 0.5 * len(df)]
-if mostly_empty:
-    df = df.drop(columns=mostly_empty)
-    print("[Missing] Dropped columns with >50% missing:", mostly_empty)
+# Step 7: Identify missing values in the dataset
+print("\nMissing values in each column:")
+print(df.isnull().sum())
 
-for col in df.select_dtypes(include=np.number).columns:
-    if df[col].isnull().any():
-        value = df[col].mean() if num_strategy == "mean" else df[col].median()
-        df[col] = df[col].fillna(value)
-        print(f"[Missing] '{col}' filled with {num_strategy} = {value:.2f}")
-
-for col in df.select_dtypes(exclude=np.number).columns:
-    if df[col].isnull().any():
-        value = df[col].mode()[0]
-        df[col] = df[col].fillna(value)
-        print(f"[Missing] '{col}' filled with mode = {value}")
-
-# 5. OUTLIERS (IQR method, values are capped)
-for col in df.select_dtypes(include=np.number).columns:
-    q1, q3 = df[col].quantile([0.25, 0.75])
-    iqr = q3 - q1
-    low, high = q1 - 1.5 * iqr, q3 + 1.5 * iqr
-    n_out = ((df[col] < low) | (df[col] > high)).sum()
-    if n_out > 0:
-        df[col] = df[col].clip(lower=low, upper=high)
-        print(f"[Outliers] '{col}': {n_out} value(s) capped to [{low:.2f}, {high:.2f}]")
-
-# 6. ENCODING
-cat_cols = df.select_dtypes(exclude=np.number).columns.tolist()
-if cat_cols:
-    if enc_method == "onehot":
-        df = pd.get_dummies(df, columns=cat_cols, drop_first=True, dtype=int)
+# Step 8: Handle missing values using dropna() or fillna()
+# Option A: fill numeric columns with mean, text columns with mode
+for col in df.columns:
+    if df[col].dtype == "object":
+        df[col] = df[col].fillna(df[col].mode()[0])
     else:
-        for col in cat_cols:
-            df[col] = LabelEncoder().fit_transform(df[col].astype(str))
-    print(f"[Encoding] Encoded {cat_cols} using {enc_method} encoding.")
-else:
-    print("[Encoding] No categorical columns found.")
+        df[col] = df[col].fillna(df[col].mean())
 
-# 7. SCALING
-if scale_method != "none":
-    cols = df.select_dtypes(include=np.number).columns
-    scaler = StandardScaler() if scale_method == "standard" else MinMaxScaler()
-    df[cols] = scaler.fit_transform(df[cols])
-    print(f"[Scaling] {len(cols)} column(s) scaled using {scale_method} scaling.")
+# Option B: remove rows with missing values (use this instead of Option A if you prefer)
+# df = df.dropna()
 
-# 8. INSPECT (after)
-print("\n" + "=" * 60, "\nAFTER PREPROCESSING\n" + "=" * 60)
-print("Shape:", df.shape)
-print("\nMissing values:\n", df.isnull().sum())
+print("\nMissing values after handling:")
+print(df.isnull().sum())
 
-# 9. SAVE
-out_path = os.path.splitext(file_path)[0] + "_cleaned.csv"
-df.to_csv(out_path, index=False)
-print("\nCleaned data saved to:", out_path)
+# Step 9: Identify duplicate records using duplicated()
+print("\nNumber of duplicate records:", df.duplicated().sum())
 
-df.head()   # shows the final table in Jupyter
+# Step 10: Remove duplicate records using drop_duplicates()
+df = df.drop_duplicates()
+print("Duplicates after removal:", df.duplicated().sum())
+
+# Step 11: Remove irrelevant columns using drop(), if required
+# Replace 'column_name' with the column(s) you want to remove
+# df = df.drop(columns=["column_name"])
+
+# Step 12: Select and filter required data using loc[]
+# Example 1: select specific columns (replace with your column names)
+# df = df.loc[:, ["col1", "col2", "col3"]]
+# Example 2: filter rows by a condition
+# df = df.loc[df["Age"] > 18]
+
+# Step 13: Display the preprocessed DataFrame
+print("\nPreprocessed DataFrame:")
+print(df)
+
+# Step 14: Stop
